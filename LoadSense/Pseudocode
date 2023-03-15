@@ -1,0 +1,18 @@
+Start
+	Monitor sound and vibration parameters
+	If sound is greater than threshold sound, or vibration is greater than threshold vibration: // this block will run if the machine is making enough noise or vibrating enough
+		Set status to "in use"
+		Send status information to web server
+		Display "IN USE"
+	Else // this block will run in the machine is not making sufficient noise or vibrations to be recognized as "in use"
+		Begin timer
+		While timer is lower than threshold time: // loops for 10/20 mins (sufficient amount of time that will be finetuned over test phase)
+			Monitor sound and vibration parameters
+			If sound is greater than threshold sound, and vibration is greater than threshold vibration // this block will run if the machine is making enough noise or vibrating enough
+				Return to line 4
+			Update timer
+		Set status to "available" // this will run if machine is quiet and still for 10/20 mins
+		Send status information to web server
+		Display "AVAILABLE"
+	Return to line 2
+End

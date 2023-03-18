@@ -50,14 +50,12 @@ void loop() {
     sendSignal = false; // Reset the boolean variable
   }
 
-  // Your M5Stack Core2 code here
 }
 
-void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
-  // Handle WebSocket events here, if needed
-}
+
 
 void sendSignalToServer() {
   String message = "{\"type\": \"signal\", \"value\": \"your_signal_value_here\"}";
   webSocket.sendTXT(message);
-}
+} 
+/* Written with help from https://iotdesignpro.com/projects/websocket-server-with-esp32-and-arduino-ide */

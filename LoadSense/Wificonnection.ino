@@ -12,11 +12,10 @@ const int websocketPort = 12345;
 
 WebSocketsClient webSocket;
 
-// Your boolean variable
-bool sendSignal = true;
+bool Availability_check = false;
 
 void setup() {
-  M5.begin(true, true, true);
+  M5.begin(true);
   M5.Lcd.setBrightness(200);
   M5.Lcd.setTextColor(WHITE);
   M5.Lcd.setTextSize(2);
@@ -45,17 +44,15 @@ void loop() {
   webSocket.loop();
   M5.update();
 
-  if (sendSignal) {
+  if (Availability_check) {
     sendSignalToServer();
-    sendSignal = false; // Reset the boolean variable
+    Availability_check = false; // Reset the boolean variable
   }
 
 }
-
-
 
 void sendSignalToServer() {
   String message = "{\"type\": \"signal\", \"value\": \"your_signal_value_here\"}";
   webSocket.sendTXT(message);
 } 
-/* Written with help from https://iotdesignpro.com/projects/websocket-server-with-esp32-and-arduino-ide */
+// Written with help from https://iotdesignpro.com/projects/websocket-server-with-esp32-and-arduino-ide

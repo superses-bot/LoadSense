@@ -20,7 +20,7 @@ bool Is_shaking(float gyroX, float gyroY, float gyroZ){
 bool Availability_check(void){
   M5.Rtc.GetTime(&currenttime); // gets and stores current time
   targettime = currenttime;
-  targettime.Minutes = currenttime.Minutes + 1; // calculates target time using current time
+  targettime.Minutes = currenttime.Minutes + 10; // calculates target time using current time
   while ((targettime.Hours*60 + targettime.Minutes) > (currenttime.Hours*60 + currenttime.Minutes)){ // loops for 10 minutes
     M5.IMU.getGyroData(&gyroX, &gyroY, &gyroZ);
     if (Is_shaking(gyroX, gyroY, gyroZ)){

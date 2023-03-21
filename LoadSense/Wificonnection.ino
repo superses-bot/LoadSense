@@ -7,8 +7,8 @@ const char* ssid = "Andrewphone";
 const char* password = "Andrewpassword";
 
 // WebSocket server settings
-const char* websocketServer = "loadsense.com";
-const int websocketPort = 12345;
+const char* websocketServer = "wss://ws.postman-echo.com/raw";
+const int websocketPort = 80;
 
 WebSocketsClient webSocket;
 
@@ -52,7 +52,7 @@ void loop() {
 }
 
 void sendSignalToServer() {
-  String message = "{\"type\": \"signal\", \"value\": \"your_signal_value_here\"}";
+  String message = "{\"machinenumber\": \"availability\",}";
   webSocket.sendTXT(message);
 } 
 // Written with help from https://iotdesignpro.com/projects/websocket-server-with-esp32-and-arduino-ide

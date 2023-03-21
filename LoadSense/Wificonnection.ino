@@ -1,18 +1,37 @@
 #include <WiFi.h>
-#include <WebSocketsClient.h>
+#include <ArduinoWebsockets.h>
 #include <M5Core2.h>
 
 // WiFi settings
-const char* ssid = "Andrewphone";
-const char* password = "Andrewpassword";
+const char* ssid = "Andrew";
+const char* password = "andrew123";
 
 // WebSocket server settings
-const char* websocketServer = "wss://ws.postman-echo.com/raw";
-const int websocketPort = 80;
+const char* websockets_server = "wss://ws.postman-echo.com/raw:8080";
 
-WebSocketsClient webSocket;
+using namespace websockets;
 
 bool Availability_check = false;
+
+WebsocketsClient client;
+
+void onEventsCallback(WebsocketsEvent event, String data) {
+  if (event == WebsocketsEvent::ConnectionOpened) {
+    Serial.println("Connnection Opened");
+  } else if (event == WebsocketsEvent::ConnectionClosed) {
+    Serial.println("Connnection Closed");
+  } else if (event == WebsocketsEvent::GotPing) {
+    Serial.println("Got a Ping!");
+  } else if (event == WebsocketsEvent::GotPong) {
+    Serial.println("Got a Pong!");
+  }
+}
+
+
+void sendSignalToServer() {
+  String message = "{\"machinenumber\": \"availability\",}";
+  client.send(message);
+}
 
 void setup() {
   M5.begin(true);
@@ -20,7 +39,7 @@ void setup() {
   M5.Lcd.setTextColor(WHITE);
   M5.Lcd.setTextSize(2);
   M5.Lcd.setCursor(0, 0);
-  
+
   M5.Lcd.println("Connecting to WiFi...");
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
@@ -28,31 +47,23 @@ void setup() {
     M5.Lcd.print(".");
   }
   M5.Lcd.println("\nWiFi connected");
-
-  M5.Lcd.print("Connecting to WebSocket server...");
-  webSocket.begin(websocketServer, websocketPort);
-  webSocket.onEvent(webSocketEvent);
-  while (!webSocket.connected()) {
-    webSocket.loop();
-    delay(500);
-    M5.Lcd.print(".");
-  }
-  M5.Lcd.println("\nWebSocket connected");
+  delay(5000);
+  M5.Lcd.clear();
+  client.onEvent(onEventsCallback);
+  client.connect(websockets_server);
 }
 
 void loop() {
-  webSocket.loop();
+  client.poll();
   M5.update();
-
   if (Availability_check) {
     sendSignalToServer();
-    Availability_check = false; // Reset the boolean variable
+    Availability_check = false;  // Reset the boolean variable
   }
-
 }
 
-void sendSignalToServer() {
-  String message = "{\"machinenumber\": \"availability\",}";
-  webSocket.sendTXT(message);
-} 
+
+
+
+
 // Written with help from https://iotdesignpro.com/projects/websocket-server-with-esp32-and-arduino-ide

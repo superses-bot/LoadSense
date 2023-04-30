@@ -1,69 +1,66 @@
-#include <WiFi.h>
-#include <ArduinoWebsockets.h>
 #include <M5Core2.h>
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
 
-// WiFi settings
-const char* ssid = "Andrew";
-const char* password = "andrew123";
-
-// WebSocket server settings
-const char* websockets_server = "wss://ws.postman-echo.com/raw:8080";
-
-using namespace websockets;
-
-bool Availability_check = false;
-
-WebsocketsClient client;
-
-void onEventsCallback(WebsocketsEvent event, String data) {
-  if (event == WebsocketsEvent::ConnectionOpened) {
-    Serial.println("Connnection Opened");
-  } else if (event == WebsocketsEvent::ConnectionClosed) {
-    Serial.println("Connnection Closed");
-  } else if (event == WebsocketsEvent::GotPing) {
-    Serial.println("Got a Ping!");
-  } else if (event == WebsocketsEvent::GotPong) {
-    Serial.println("Got a Pong!");
-  }
-}
-
-
-void sendSignalToServer() {
-  String message = "{\"machinenumber\": \"availability\",}";
-  client.send(message);
-}
+const char* ssid = "Phonemanjee";
+const char* password = "hatim1234";
+const char* server = "loadsense.hosting.nyu.edu";
+const int port = 443; // Change this if your server is running on a different port
+const char* m5stack_id = "M5Stack_1"; 
 
 void setup() {
-  M5.begin(true);
-  M5.Lcd.setBrightness(200);
-  M5.Lcd.setTextColor(WHITE);
-  M5.Lcd.setTextSize(2);
+  M5.begin();
+  M5.Lcd.clear();
   M5.Lcd.setCursor(0, 0);
+  M5.Lcd.println("Connecting to Wi-Fi...");
 
-  M5.Lcd.println("Connecting to WiFi...");
   WiFi.begin(ssid, password);
+
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     M5.Lcd.print(".");
   }
-  M5.Lcd.println("\nWiFi connected");
-  delay(5000);
+
   M5.Lcd.clear();
-  client.onEvent(onEventsCallback);
-  client.connect(websockets_server);
+  M5.Lcd.println("Connected to Wi-Fi.");
 }
 
 void loop() {
-  client.poll();
-  M5.update();
-  if (Availability_check) {
-    sendSignalToServer();
-    Availability_check = false;  // Reset the boolean variable
+  // Replace this with the appropriate condition for sending the message
+  bool messageToSend = true;
+
+  WiFiClientSecure client;
+
+  // Disable SSL/TLS certificate verification
+  client.setInsecure();
+
+  if (client.connect(server, port)) {
+    M5.Lcd.println("Connected to server.");
+
+    // Prepare the GET request
+    String request = "GET /receive_message.php?message=";
+    request += messageToSend ? "true" : "false";
+    request += "&id=" + String(m5stack_id); // Add the identifier to the request
+    request += " HTTP/1.1\r\n";
+    request += "Host: " + String(server) + "\r\n";
+    request += "Connection: close\r\n\r\n";
+
+    // Send the GET request
+    client.print(request);
+
+    // Wait for the response and print it to the M5Stack display
+    while (client.connected()) {
+      String response = client.readStringUntil('\n');
+      M5.Lcd.println(response);
+    }
+
+    client.stop();
+    M5.Lcd.println("Disconnected from server.");
+  } else {
+    M5.Lcd.println("Connection to server failed.");
   }
+
+  // Wait some time before sending the next message
+  // Adjust this delay as needed
+  delay(10000);
 }
-
-
-
-
-
-// Written with help from https://iotdesignpro.com/projects/websocket-server-with-esp32-and-arduino-ide

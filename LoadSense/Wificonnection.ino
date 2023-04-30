@@ -5,7 +5,7 @@
 const char* ssid = "Phonemanjee";
 const char* password = "hatim1234";
 const char* server = "loadsense.hosting.nyu.edu";
-const int port = 443; // Change this if your server is running on a different port
+const int port = 443;
 const char* m5stack_id = "M5Stack_1"; 
 
 void setup() {

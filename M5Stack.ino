@@ -1,15 +1,11 @@
 #include <M5Core2.h>
 #define THRESHOLD_VIBRATION 300
-#define THRESHOLD_ROLL 60
 
 
 float accX = 0.0F;
 float accY = 0.0F;
 float accZ = 0.0F;
 
-float pitch = 0.0F;
-float roll = 0.0F;
-float yaw = 0.0F;
 bool available = false;
 
 
@@ -64,17 +60,6 @@ bool Availability_check(void){ // checks if machine is available - classified as
 }
 
 
-bool open_check(void){
-  M5.IMU.getAhrsData(&pitch, &roll, &yaw);
-  if(roll > THRESHOLD_ROLL){
-    return(true);
-  }
-  else{
-    return(false);
-  }
-}
-
-
 void setup() {
   M5.begin();
   M5.IMU.Init();
@@ -92,6 +77,21 @@ void setup() {
 
 void loop() {
   M5.IMU.getAccelData(&accX, &accY, &accZ);  // Stores the gyroscope data to the relevant variable
-  M5.Lcd.setCursor(100,0);
-  M5.Lcd.printf("accZ : %3.4f", accZ);
+
+  if (Is_shaking(accX, accY, accZ)) {
+    available = false;
+  }else{
+    available = Availability_check();
+  }
+  if (available){
+    M5.Lcd.setTextColor(WHITE, BLACK);
+    M5.Lcd.setCursor(100,100);
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.printf("  AVAILABLE  ");
+  }else{
+    M5.Lcd.setTextColor(WHITE, BLACK);
+    M5.Lcd.setCursor(100,100);
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.printf("NOT AVAILABLE");
+  }
 }

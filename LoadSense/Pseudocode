@@ -1,18 +1,88 @@
-Loop Forever
-	Monitor sound and vibration parameters
-	If sound is greater than threshold sound, or vibration is greater than threshold vibration: // this block will run if the machine is making enough noise or vibrating enough
-		Set status to "in use"
-		Send status information to web server
-		Display "IN USE"
-	Else // this block will run in the machine is not making sufficient noise or vibrations to be recognized as "in use"
-		Begin timer
-		While timer is lower than threshold time: // loops for 10/20 mins (sufficient amount of time that will be finetuned over test phase)
-			Monitor sound and vibration parameters
-			If sound is greater than threshold sound, and vibration is greater than threshold vibration // this block will run if the machine is making enough noise or vibrating enough
-				Return to line 4
-			Update timer
-		Set status to "available" // this will run if machine is quiet and still for 10/20 mins
-		Send status information to web server
-		Display "AVAILABLE"
-	Return to line 2
-End of Loop
+set THRESHOLD_VIBRATION to 200
+set THRESHOLD_ACCELERATION to 0.5
+set availability to false
+set open_flag to false
+
+FUNCTION open_check(void) : boolean
+    get and store acceleration data in accX, accY and accZ
+    IF accZ is less than -1*THRESHOLD_ACCELERATION THEN
+        print "closed"
+        set open_flag to false
+        wait for 800 ms
+    ELSE IF accZ is greater than THRESHOLD_ACCELERATION THEN
+        print "open"
+        set open_flag to true
+        set available to true
+        wait for 800 ms
+    ENDIF
+ENDFUNCTION
+
+FUNCTION average_vibration(void) : double
+    get and store current time in variable currenttime
+    convert currenttime to seconds and store it in currenttimeseconds
+    set variable targettimeseconds to be 5 seconds more than currenttimeseconds
+    set sum as 0
+    WHILE targettimeseconds is greater than currenttimeseconds DO
+      get acceleration and store it in the accX, accY and accZ variables
+      IF door is opened THEN
+        RETURN -1
+      ELSE
+        get and store current time in currenttime variable
+        convert currenttime to seconds and store it in currenttimeseconds
+        set accZ to be the absolute value of accZ
+        add accZ to the sum
+      ENDIF
+    ENDWHILE
+    divide sum by 5
+    RETURN sum;
+ENDFUNCTION
+
+
+FUNCTION Is_shaking(accX:float, accY:float, accZ:float) : boolean
+    set avg to be the output of function average_vibration()
+    IF avg is greater than THRESHOLD_VIBRATION THEN
+        print "vibrating"
+        RETURN true
+    ELSE IF (avg is less than THRESHOLD_VIBRATION) and (avg is not -1) THEN
+        print "not vibrating"
+        RETURN false
+    ELSE IF avg is -1 THEN
+        set available to true
+        RETURN false
+    ENDIF
+ENDFUNCTION
+
+FUNCTION Availability_check(void) : boolean
+    get and store current time in variable currenttime
+    convert currenttime to seconds and store it in currenttimeseconds
+    set variable targettime to be 60 seconds more than currenttimeseconds
+    WHILE (targettimeseconds is greater than currenttimeseconds DO
+        get acceleration and store it in the accX, accY and accZ variables
+        run function open_check
+        IF open_flag is true THEN
+            RETURN true
+        ENDIF
+        IF Is_shaking(accX, accY, accZ) is true THEN
+            RETURN false
+        ENDIF
+        get and store current time in variable currenttime
+        convert currenttime to seconds and store it in currenttimeseconds
+    ENDWHILE
+    RETURN true
+ENDFUNCTION
+
+
+WHILE true DO
+    get acceleration and store it in the accX, accY and accZ variables
+    IF ((Is_shaking(accX, accY, accZ) is true)and(open_flag is false)) THEN
+        set available to false
+    ELSE
+        set available to the output of function Availability_check()
+    ENDIF
+
+    IF available is true THEN
+        send true to server
+    ELSE
+        send false to server
+    ENDIF
+ENDWHILE

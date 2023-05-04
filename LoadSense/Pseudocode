@@ -1,7 +1,7 @@
 set availability to false
 set open_flag to false
 
-FUNCTION open_check(void) : boolean
+FUNCTION open_check(void) : void
     get and store acceleration data in accX, accY and accZ
     IF accZ is less than -1*THRESHOLD_ACCELERATION THEN
         print "closed"

@@ -1,0 +1,47 @@
+Receive message pseudocode
+
+Check if message and machine ID received from M5Stack
+  Set message to message variable
+  Set machine ID to ID variable
+  Check if message recieved is true or false
+    Put message into text file named with machine ID
+    Send success response to M5Stack
+  If message is not true or false
+    Send error response to M5Stack
+ If a proper message is not received
+    Send error message back
+    
+
+Update webpage pseudocode
+
+Initialize color variables for machines set to default black
+Check if text file corresponding to machine 1 is created
+  Get file contents and initialize and set to message1 variable 
+  If message1 variable is true
+    Set machine color to green
+  Otherwise if machine1 variable is false
+    Set machine color to red
+ Check if text file corresponding to machine 2 is created
+  Get file contents and initialize and set to message2 variable 
+  If message2 variable is true
+    Set machine color to green
+  Otherwise if machine2 variable is false
+    Set machine color to red
+  Encode machine1 and machine2 variables into format that is readable by webpage
+  
+
+Index script pseudocode
+
+Declare function to get machine messages
+  Call Update webpage code
+    Decode machine1 and machine2 variables
+    Set the color of machineboxes according to machine color variables
+  If there is an error print error message
+Call function to get machine messages
+Delay for 10 seconds before calling function again
+
+CSS Pseudocode
+
+Draw square with text and center align to display machine status
+
+    

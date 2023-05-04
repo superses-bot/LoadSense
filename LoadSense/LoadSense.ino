@@ -6,6 +6,7 @@
 #define THRESHOLD_ACCELERATION 0.3 // symbolic constant that corresponds to the threshold acceleration for door position checks determined through testing
 
 // variables to store accelerometer data from 3 dimensions
+// accelerometer data handling from m5 stack core 2 mpu6886 example code
 float accX = 0.0F; 
 float accY = 0.0F;
 float accZ = 0.0F;
@@ -27,11 +28,13 @@ WiFiClientSecure client; // variable that is used for client-server interactions
 
 
 double average_vibration(void){ // calculates average vibration over a period of 5 seconds
+  // time type management from M5 stack core 2 rtc wakeup example code
   M5.Rtc.GetTime(&currenttime); // gets and stores current time
   int currenttimeseconds = currenttime.Hours*3600 + currenttime.Minutes*60+ currenttime.Seconds; // converts time to seconds
   int targettimeseconds = currenttimeseconds + 5; // sets target time to be at a point in time 5 seconds away from current time
   double sum = 0;
   while ((targettimeseconds) > (currenttimeseconds)){ // loops for 5 seconds
+    // accelerometer data handling from m5 stack core 2 mpu6886 example code
     M5.IMU.getAccelData(&accX, &accY, &accZ); // gets and stores accelerometer data
     open_check();
     if(open_flag){ // runs if the door has been opened
@@ -73,6 +76,7 @@ bool Is_shaking(float accX, float accY, float accZ){ // checks if average vibrat
 }
 
 void open_check(){ // checks if machine door was opened
+  // accelerometer data handling from m5 stack core 2 mpu6886 example code
   M5.IMU.getAccelData(&accX, &accY,&accZ); // gets and stores accelerometer data
   if (accZ < - THRESHOLD_ACCELERATION){ // this runs when sufficiently large negative acceleration is applied 
     M5.Lcd.setTextColor(WHITE, BLACK);
@@ -94,6 +98,8 @@ void open_check(){ // checks if machine door was opened
 }
 
 bool Availability_check(void){ // checks if machine is available - classified as available if machine's average vibration does not exceed threshold value for 5 minutes
+  // time type management from M5 stack core 2 rtc wakeup example code
+  // accelerometer data handling from m5 stack core 2 mpu6886 example code
   M5.Rtc.GetTime(&currenttime); // gets and stores current time
   int currenttimeseconds = currenttime.Hours*3600 + currenttime.Minutes*60+ currenttime.Seconds; // converts time to seconds
   int targettimeseconds = currenttimeseconds + 300; // sets target time to be at a point in time 5 minutes away from current time
@@ -150,6 +156,7 @@ void loop() {
     open_check(); // checks if door is closed
     // note that the only processes done by the M5 Stack when the door is open is to wait for the door to close, since all open washing machines are available
   }else{ // runs when door is closed
+    // accelerometer data handling from m5 stack core 2 mpu6886 example code
     M5.IMU.getAccelData(&accX, &accY, &accZ);  // gets and stores the accelerometer data
     if ((Is_shaking(accX, accY, accZ))&&(open_flag == false)) { // runs when machine is closed and vibrating
       available = false; // machine is not available

@@ -1,5 +1,3 @@
-set THRESHOLD_VIBRATION to 200
-set THRESHOLD_ACCELERATION to 0.5
 set availability to false
 set open_flag to false
 
@@ -71,18 +69,36 @@ FUNCTION Availability_check(void) : boolean
     RETURN true
 ENDFUNCTION
 
-
-WHILE true DO
-    get acceleration and store it in the accX, accY and accZ variables
-    IF ((Is_shaking(accX, accY, accZ) is true)and(open_flag is false)) THEN
-        set available to false
-    ELSE
-        set available to the output of function Availability_check()
-    ENDIF
-
-    IF available is true THEN
-        send true to server
-    ELSE
-        send false to server
-    ENDIF
+attempt to connect to WiFi hotspot
+WHILE WiFi not connected DO
+    attempt to connect to WiFi hotspot
+    OUTPUT "."
+    wait for 500ms
 ENDWHILE
+disable SSL/TLS certificate verification
+clear screen
+
+LOOP FOREVER
+    IF open_flag is true THEN
+        run function open_check()
+    ELSE
+        get and store acceleration data in accX, accY and accZ
+        IF function Is_shaking is true and open_flag is false THEN
+            set available to false
+        ELSE
+            set available to output of Availability_check()
+        ENDIF
+        IF available is true THEN
+            OUTPUT "Available"
+        ELSE
+            OUTPUT "Not available"
+        ENDIF
+        attempt to connect to server
+        IF attempt was successful THEN
+            create the appropriate GET request using available flag
+            send GET request to server
+            disconnect from server
+        ELSE
+            OUTPUT "Connection to server failed"
+        ENDIF
+ENDLOOP

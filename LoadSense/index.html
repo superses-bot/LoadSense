@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
+    
+    <!-- Everything other than the Javascript and the added HTML component for the machineboxes is from the default website provided by NYU Hosting -->
 
 <head itemscope itemtype="http://schema.org/WebSite">
     <meta charset="utf-8">
@@ -64,7 +66,7 @@
                 document.getElementById('machine2').style.backgroundColor = data.machine2Color;
             })
             .catch(error => {
-                console.error('Error fetching messages:', error);
+                console.error('Error fetching messages:', error); //If error reading
             });
         }
         getMachineMessage();
